@@ -14,5 +14,9 @@
   "license": "ISC",
   "devDependencies": {
     "lite-server": "^2.3.0"
+  },
+  "dependencies": {
+    "ipfs-api": "^26.1.2",
+    "ipfs-http-client": "^32.0.1"
   }
 }

@@ -56,14 +56,12 @@ App = {
       userInstance = instance;
       return userInstance.userCount();
     }).then(function(userCount) {
-
       var userResults = $("#user-result");
       userResults.empty();
 
       userResults.append("<th><td> user ID </td><td> Civil Score </td><td> Interest Rate </td><td> City </td><td> Salary </td></th>");
 
-//      var candidatesSelect = $('#candidatesSelect');
-//      candidatesSelect.empty();
+
   
       for (var i = 1; i <= userCount; i++) {
         userInstance.personalset(i).then(function(useropen) {
@@ -72,21 +70,23 @@ App = {
           var interestRate = useropen[2];
           var city = useropen[3];
           var salary = useropen[4];
+//          var hash = useropen[5];
+
+          // let bufferOriginal = Buffer.from(JSON.parse(hash).data);
+          // console.log(bufferOriginal);
 
 
-          // Render candidate Result
+          // Render user Result
           var userTemplate = '<tr id="row$(id)"><td></td><td>' + id + "</td><td>" + civil_score + "</td><td>" + interestRate + "</td><td>" + city + "</td><td>" + salary + '</td></tr>'
           userResults.append(userTemplate);
   
-          // Render candidate ballot option
-//          var candidateOption = "<option value='" + id + "' >" + name + "</ option>"
-//          candidatesSelect.append(candidateOption);
+
           return useropen[5];
         }).then(function(hasPermission) {
-          // Do not allow a user to vote
+          
           if(hasPermission==0) {
-            temp = "<tr><td>cant share </td></tr>"
-            userResults.append(temp);
+            temp = "<p></p>"
+            //userResults.append(temp);
           }
         });
 
@@ -98,49 +98,83 @@ App = {
       console.warn(error);
     });
   },
+  add_detail: function(event){
+
+    App.contracts.engine.deployed().then(function(instance2){
+      detailInstance=instance2;
+      var _name=$('#nam')[0].value;
+      var _phno=$('#ph')[0].value;
+      var _email=$('#em')[0].value;
+      var _house=$('#ho')[0].value;
+      var _civil=$('#ci_sc')[0].value;
+      var _rate=$('#irate')[0].value;
+      var _city=$('#cit')[0].value;
+      var _sal=$('#sal')[0].value;
+      var _perm=$('#perm')[0].value;
+      var _add=$('#add')[0].value;
+      detailInstance.addUser(_add,_perm,_name,_phno,_email,_house,_civil,_rate,_city,_sal).then(function(e){
+        var last = $('#last');
+        var last1 = '<p>user details registered</p>'
+        last.append(last1);
+
+      }).catch(function(error){
+        console.log(error);
+      })
+    })
+
+
+
+  },
   tryclaim: function(e) {
     var value1 = $("#text-value");
-    console.log(value1[0].value)
     var id0 = value1[0].value;
 
-    App.contracts.engine.deployed().then(function(instance){
-      claimInstance=instance;
+    App.contracts.engine.deployed().then(function(instance1){
+      claimInstance=instance1;
+//      xxxx=claimInstance.userCount();
+//      console.log(xxxx);
+      return claimInstance.userCount()
+    }).then(function(userCount1){
+      var userOutput = $("#user-output");
+      if (id0>=1 && id0<=userCount1)
+      {
+
       claimInstance.personalset(id0).then(function(ii){check=ii;
+
       
-      if (check[5]==1){
-        claimInstance.claim(id0).then(function(result){
+        if (check[5]==1){
+         claimInstance.claim.call(id0).then(function(result){
+
           var user_address = result[0];
           var name = result[1];
           var phone = result[2];
           var email1 = result[3];
           var home = result[4];
           
-          var userOutput = $("#user-output");
+          userOutput.append("<h3> Personal Details of User:"+id0+"</h3>");
           var userTemplate1 = '<table><tr><td>Blockchain ID:</td><td>' + user_address + '</td></tr><tr><td>Name</td><td>' + name + '</td></tr><tr><td>Phone:</td><td>' + phone + '</td></tr><tr><td>Email ID:</td><td>' + email1 + '</td></tr><tr><td>Address:</td><td>' + home + '</td></tr></table>'
+          
           userOutput.append(userTemplate1);
-        })
-      }
+          })
+        }
     
+        else{
+        console.log("personal details access denied")
+        userOutput.empty();
+        userOutput.append('<p>User:' + id0 + ' do not want to share Personal Details</p>')
+        }
+      })
+      }
       else{
-        console.log("chalani")
+          userOutput.empty();
+          userOutput.append('<p>Enter Valid User ID</p>')
       }
-    })
-    });
-    
-/*    var candidateId = $('#candidatesSelect').val();
-    App.contracts.Election.deployed().then(function(instance) {
-      return instance.vote(candidateId, { from: App.account });
-    }).then(function(result) {
-      // Wait for votes to update
-      $("#content").hide();
-      $("#loader").show();
-      setTimeout(2);
-      document.location.reload(true);
-    }).catch(function(err) {
-      console.error(err);
-    });*/
+    }); 
   }
 };
+
+// const IPFS = require('../../node_modules/ipfs-api');//C:\Users\Parth\Desktop\project\Dapp\Ad_Engine\node_modules
+// const ipfs = new IPFS({host: 'ipfs.infura.in', port: 5001, protocol: 'htps'});
 
 
 $(function() {
